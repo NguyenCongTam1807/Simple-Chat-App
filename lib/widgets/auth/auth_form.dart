@@ -2,7 +2,12 @@ import 'package:chat_app/common/dialogs.dart';
 import 'package:flutter/material.dart';
 
 class AuthForm extends StatefulWidget {
-  const AuthForm({Key? key}) : super(key: key);
+  final Future<void> Function(
+      {required String email,
+      required String password,
+      required String username,
+      required bool isLogin}) submitAuthForm;
+  const AuthForm(this.submitAuthForm, {Key? key}) : super(key: key);
 
   @override
   State<AuthForm> createState() => _AuthFormState();
@@ -16,7 +21,9 @@ class _AuthFormState extends State<AuthForm>
   final TextEditingController _passwordController = TextEditingController();
 
   AuthMode _authMode = AuthMode.login;
-  Map<String, String> _authData = {};
+  var _username = '';
+  var _email = '';
+  var _password = '';
 
   late AnimationController _expandController;
   late Animation<double> _sizeAnimation;
@@ -49,6 +56,11 @@ class _AuthFormState extends State<AuthForm>
       return;
     }
     _formKey.currentState?.save();
+    widget.submitAuthForm(
+        username: _username,
+        email: _email,
+        password: _password,
+        isLogin: _authMode == AuthMode.login);
     // setState(() {
     //   _isLoading = true;
     // });
@@ -87,14 +99,15 @@ class _AuthFormState extends State<AuthForm>
                 TextFormField(
                   decoration: const InputDecoration(labelText: 'Username'),
                   validator: (value) {
-                    final regExp = RegExp("^[a-zA-Z]{6,}\$");
+                    final regExp = RegExp("^[a-zA-Z0-9]{4,}\$");
                     if (value != null && regExp.hasMatch(value)) {
+                      print("SUCCESS");
                       return null;
                     }
                     return 'Invalid username';
                   },
                   onSaved: (value) {
-                    _authData['username'] = value ?? "";
+                    _username = value ?? "";
                   },
                 ),
                 TextFormField(
@@ -106,10 +119,11 @@ class _AuthFormState extends State<AuthForm>
                     //final regExp = RegExp("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[*.!@\$%^&(){}[]:;<>,.?/~_+-=|\\]).{6,32}\$");
                     if (value != null && regExp.hasMatch(value)) {
                       return null;
-                    } return "Password does not match requirements";
+                    }
+                    return "Password does not match requirements";
                   },
                   onSaved: (value) {
-                    _authData['password'] = value ?? "";
+                    _password = value ?? "";
                   },
                 ),
                 SizeTransition(
@@ -117,7 +131,8 @@ class _AuthFormState extends State<AuthForm>
                   child: Column(
                     children: [
                       TextFormField(
-                        decoration: const InputDecoration(labelText: 'Re-enter Password'),
+                        decoration: const InputDecoration(
+                            labelText: 'Re-enter Password'),
                         obscureText: true,
                         validator: (value) {
                           if (value != _passwordController.text) {
@@ -129,14 +144,15 @@ class _AuthFormState extends State<AuthForm>
                         decoration: const InputDecoration(labelText: 'E-Mail'),
                         keyboardType: TextInputType.emailAddress,
                         validator: (value) {
-                          final regExp = RegExp("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}\$");
+                          final regExp =
+                              RegExp("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}\$");
                           if (value != null && regExp.hasMatch(value)) {
                             return null;
                           }
                           return "Please enter a correctly formatted email";
                         },
                         onSaved: (value) {
-                          _authData['email'] = value ?? "";
+                          _email = value ?? "";
                         },
                       ),
                     ],
@@ -150,8 +166,13 @@ class _AuthFormState extends State<AuthForm>
                   children: [
                     TextButton(
                         onPressed: _switchAuthMode,
-                        child: const Text("Sign Up")),
-                    ElevatedButton(onPressed: () {}, child: const Text("Login"))
+                        child: Text(_authMode == AuthMode.login
+                            ? "Create an account"
+                            : "I have an account")),
+                    ElevatedButton(
+                        onPressed: _submit,
+                        child: Text(
+                            _authMode == AuthMode.login ? "Login" : "Sign up"))
                   ],
                 )
               ],

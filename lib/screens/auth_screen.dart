@@ -1,8 +1,34 @@
+import 'package:chat_app/common/dialogs.dart';
 import 'package:chat_app/widgets/auth/auth_form.dart';
 import 'package:flutter/material.dart';
 
-class AuthScreen extends StatelessWidget {
+import 'package:firebase_auth/firebase_auth.dart';
+
+class AuthScreen extends StatefulWidget {
   const AuthScreen({Key? key}) : super(key: key);
+
+  @override
+  State<AuthScreen> createState() => _AuthScreenState();
+}
+
+class _AuthScreenState extends State<AuthScreen> {
+  final _auth = FirebaseAuth.instance;
+
+  Future<void> _submitAuthForm({required String email, required String password, required String username, required bool isLogin}) async {
+    late UserCredential userCredential;
+    print("email: $email, password: $password, username: $username, isLogin $isLogin");
+    try {
+      if (isLogin) {
+        userCredential = await _auth.signInWithEmailAndPassword(email: email, password: password);
+      } else {
+        userCredential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+        print(userCredential.user?.email);
+      }
+    } catch(err, stacktrace) {
+      print(stacktrace);
+      showErrorDialog(context, err.toString());
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +60,7 @@ class AuthScreen extends StatelessWidget {
                   ),),
                   Icon(Icons.send, size: 48, color: Theme.of(context).primaryColor),
                   const SizedBox(height: 30,),
-                  const Center(child: AuthForm()),
+                  Center(child: AuthForm(_submitAuthForm)),
                   const SizedBox(height: 60,),
                 ],
               ),

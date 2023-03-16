@@ -52,31 +52,17 @@ class _AuthFormState extends State<AuthForm>
   }
 
   Future<void> _submit() async {
+    print("Submit Auth Form 1");
     if (_formKey.currentState?.validate() == false) {
       return;
     }
     _formKey.currentState?.save();
+    print("Submit Auth Form");
     widget.submitAuthForm(
         username: _username,
         email: _email,
         password: _password,
         isLogin: _authMode == AuthMode.login);
-    // setState(() {
-    //   _isLoading = true;
-    // });
-    // //if (_authMode == AuthMode.login) {
-    // try {
-    //   await Provider.of<AuthProvider>(context, listen: false).authenticate(_authData['email']!, _authData['password']!, signUp: _authMode == AuthMode.signUp);
-    // } on HttpException catch (err) {
-    //   error = err.message;
-    //   showErrorDialog(error, context);
-    // } catch (err) {
-    //   error = err.toString();
-    //   showErrorDialog(error, context);
-    // }
-    // setState(() {
-    //   _isLoading = false;
-    // });
   }
 
   @override
@@ -97,17 +83,18 @@ class _AuthFormState extends State<AuthForm>
             child: Column(
               children: <Widget>[
                 TextFormField(
-                  decoration: const InputDecoration(labelText: 'Username'),
+                  decoration: const InputDecoration(labelText: 'E-Mail'),
+                  keyboardType: TextInputType.emailAddress,
                   validator: (value) {
-                    final regExp = RegExp("^[a-zA-Z0-9]{4,}\$");
+                    final regExp =
+                    RegExp("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}\$");
                     if (value != null && regExp.hasMatch(value)) {
-                      print("SUCCESS");
                       return null;
                     }
-                    return 'Invalid username';
+                    return "Please enter a correctly formatted email";
                   },
                   onSaved: (value) {
-                    _username = value ?? "";
+                    _email = value ?? "";
                   },
                 ),
                 TextFormField(
@@ -135,24 +122,23 @@ class _AuthFormState extends State<AuthForm>
                             labelText: 'Re-enter Password'),
                         obscureText: true,
                         validator: (value) {
-                          if (value != _passwordController.text) {
-                            return 'Passwords do not match';
+                          if (_authMode == AuthMode.login || value == _passwordController.text) {
+                            return null;
                           }
+                          return 'Passwords do not match';
                         },
                       ),
                       TextFormField(
-                        decoration: const InputDecoration(labelText: 'E-Mail'),
-                        keyboardType: TextInputType.emailAddress,
+                        decoration: const InputDecoration(labelText: 'Username'),
                         validator: (value) {
-                          final regExp =
-                              RegExp("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}\$");
-                          if (value != null && regExp.hasMatch(value)) {
+                          final regExp = RegExp("^[a-zA-Z0-9@.]{4,}\$");
+                          if (_authMode == AuthMode.login || (value != null && regExp.hasMatch(value))) {
                             return null;
                           }
-                          return "Please enter a correctly formatted email";
+                          return 'Invalid username';
                         },
                         onSaved: (value) {
-                          _email = value ?? "";
+                          _username = value ?? "";
                         },
                       ),
                     ],
@@ -161,20 +147,15 @@ class _AuthFormState extends State<AuthForm>
                 const SizedBox(
                   height: 30,
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    TextButton(
-                        onPressed: _switchAuthMode,
-                        child: Text(_authMode == AuthMode.login
-                            ? "Create an account"
-                            : "I have an account")),
-                    ElevatedButton(
-                        onPressed: _submit,
-                        child: Text(
-                            _authMode == AuthMode.login ? "Login" : "Sign up"))
-                  ],
-                )
+                ElevatedButton(
+                    onPressed: _submit,
+                    child: Text(
+                        _authMode == AuthMode.login ? "Login" : "Sign up")),
+                TextButton(
+                    onPressed: _switchAuthMode,
+                    child: Text(_authMode == AuthMode.login
+                        ? "Create an account"
+                        : "I have an account")),
               ],
             ),
           ),

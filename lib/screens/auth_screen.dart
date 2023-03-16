@@ -3,6 +3,7 @@ import 'package:chat_app/widgets/auth/auth_form.dart';
 import 'package:flutter/material.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({Key? key}) : super(key: key);
@@ -14,19 +15,32 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen> {
   final _auth = FirebaseAuth.instance;
 
+  bool isLoading = false;
+
   Future<void> _submitAuthForm({required String email, required String password, required String username, required bool isLogin}) async {
     late UserCredential userCredential;
     print("email: $email, password: $password, username: $username, isLogin $isLogin");
     try {
+      setState(() {
+        isLoading = true;
+      });
       if (isLogin) {
+        print('SIgn In');
         userCredential = await _auth.signInWithEmailAndPassword(email: email, password: password);
       } else {
         userCredential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
-        print(userCredential.user?.email);
+        await FirebaseFirestore.instance.collection('users').doc(userCredential.user?.uid).set({
+          'username' : username,
+          'email': email,
+        });
       }
     } catch(err, stacktrace) {
       print(stacktrace);
       showErrorDialog(context, err.toString());
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -66,6 +80,12 @@ class _AuthScreenState extends State<AuthScreen> {
               ),
             ),
           ),
+          if (isLoading)
+            Container(
+              width: double.infinity,
+              height: double.infinity,
+              color: Colors.white.withOpacity(0.5),
+                alignment: AlignmentDirectional.center,child: const CircularProgressIndicator()),
         ]
       ),
     );

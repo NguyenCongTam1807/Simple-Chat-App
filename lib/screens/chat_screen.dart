@@ -2,12 +2,25 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import 'package:firebase_auth/firebase_auth.dart';
+
 class ChatScreen extends StatelessWidget {
   const ChatScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Flutter Chat'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
+            },
+          )
+        ],
+      ),
       body: StreamBuilder(
         stream: FirebaseFirestore.instance
             .collection('chat/mvKm3XoySd1ZZuAha1dX/messages')
@@ -19,13 +32,7 @@ class ChatScreen extends StatelessWidget {
             );
           } else {
             final documents = snapshot.data?.docs;
-            documents?.forEach((element) {
-              print(element['createdAt']??"0000-00-00 00:00:00.000");
-            });
             documents?.sort((a, b) => a['createdAt'].compareTo(b['createdAt']));
-            documents?.forEach((element) {
-              print(element['createdAt']??"0000-00-00 00:00:00.000");
-            });
 
             return ListView.builder(
                 itemCount: documents?.length,

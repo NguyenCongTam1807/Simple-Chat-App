@@ -52,12 +52,10 @@ class _AuthFormState extends State<AuthForm>
   }
 
   Future<void> _submit() async {
-    print("Submit Auth Form 1");
     if (_formKey.currentState?.validate() == false) {
       return;
     }
     _formKey.currentState?.save();
-    print("Submit Auth Form");
     widget.submitAuthForm(
         username: _username,
         email: _email,

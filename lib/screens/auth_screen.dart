@@ -19,13 +19,11 @@ class _AuthScreenState extends State<AuthScreen> {
 
   Future<void> _submitAuthForm({required String email, required String password, required String username, required bool isLogin}) async {
     late UserCredential userCredential;
-    print("email: $email, password: $password, username: $username, isLogin $isLogin");
     try {
       setState(() {
         isLoading = true;
       });
       if (isLogin) {
-        print('SIgn In');
         userCredential = await _auth.signInWithEmailAndPassword(email: email, password: password);
       } else {
         userCredential = await _auth.createUserWithEmailAndPassword(email: email, password: password);

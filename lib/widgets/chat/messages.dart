@@ -1,6 +1,5 @@
 import 'package:chat_app/widgets/chat/message_bubble.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class Messages extends StatelessWidget {
@@ -29,7 +28,7 @@ class Messages extends StatelessWidget {
                 return MessageBubble(
                   text: messageData?['text'],
                   userId: messageData?['userId']??"",
-                  username: messageData?['username']??"",
+                  imageUrl: messageData?['image_url'],
                   key: ValueKey(documents?[index].id),
                 );
               });

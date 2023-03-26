@@ -20,7 +20,7 @@ class _NewMessageState extends State<NewMessage> {
         FirebaseFirestore.instance.collection('chat').add({
           'text': _messageController.text,
           'userId': FirebaseAuth.instance.currentUser?.uid,
-          'username': userData['username'],
+          'image_url': userData['image_url'],
           'createdAt':
               DateFormat('yyyy-MM-dd, hh:mm:ss.SSS').format(DateTime.now())
         });

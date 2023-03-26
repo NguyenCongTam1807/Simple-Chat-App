@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:chat_app/common/dialogs.dart';
 import 'package:chat_app/widgets/auth/auth_form.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -17,22 +20,36 @@ class _AuthScreenState extends State<AuthScreen> {
 
   bool isLoading = false;
 
-  Future<void> _submitAuthForm({required String email, required String password, required String username, required bool isLogin}) async {
+  Future<void> _submitAuthForm(
+      {required String email,
+      required String password,
+      required String username,
+      required File? avatar,
+      required bool isLogin}) async {
     late UserCredential userCredential;
     try {
       setState(() {
         isLoading = true;
       });
       if (isLogin) {
-        userCredential = await _auth.signInWithEmailAndPassword(email: email, password: password);
+        userCredential = await _auth.signInWithEmailAndPassword(
+            email: email, password: password);
       } else {
-        userCredential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
-        await FirebaseFirestore.instance.collection('users').doc(userCredential.user?.uid).set({
-          'username' : username,
+        userCredential = await _auth.createUserWithEmailAndPassword(
+            email: email, password: password);
+        final ref = FirebaseStorage.instance.ref().child('user_image').child('${userCredential.user?.uid}.jpg');
+        final uploadedImageUrl = await ref.putFile(avatar!).then((_) => ref.getDownloadURL());
+
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userCredential.user?.uid)
+            .set({
+          'username': username,
           'email': email,
+          'image_url': uploadedImageUrl
         });
       }
-    } catch(err, stacktrace) {
+    } catch (err, stacktrace) {
       print(stacktrace);
       showErrorDialog(context, err.toString());
     } finally {
@@ -45,47 +62,53 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Color.fromRGBO(253, 190, 91, 0.7),
-                  Color.fromRGBO(217, 42, 126, 0.7),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                stops: [0, 1],
-              ),
+      body: Stack(children: [
+        Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color.fromRGBO(253, 190, 91, 0.7),
+                Color.fromRGBO(217, 42, 126, 0.7),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              stops: [0, 1],
             ),
           ),
-          Center(
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text("MESSENGER", style: TextStyle(
+        ),
+        Center(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "MESSENGER",
+                  style: TextStyle(
                       fontSize: 48,
                       fontWeight: FontWeight.bold,
-                      color: Theme.of(context).primaryColor
-                  ),),
-                  Icon(Icons.send, size: 48, color: Theme.of(context).primaryColor),
-                  const SizedBox(height: 30,),
-                  Center(child: AuthForm(_submitAuthForm)),
-                  const SizedBox(height: 60,),
-                ],
-              ),
+                      color: Theme.of(context).primaryColor),
+                ),
+                Icon(Icons.send,
+                    size: 48, color: Theme.of(context).primaryColor),
+                const SizedBox(
+                  height: 30,
+                ),
+                Center(child: AuthForm(_submitAuthForm)),
+                const SizedBox(
+                  height: 60,
+                ),
+              ],
             ),
           ),
-          if (isLoading)
-            Container(
+        ),
+        if (isLoading)
+          Container(
               width: double.infinity,
               height: double.infinity,
               color: Colors.white.withOpacity(0.5),
-                alignment: AlignmentDirectional.center,child: const CircularProgressIndicator()),
-        ]
-      ),
+              alignment: AlignmentDirectional.center,
+              child: const CircularProgressIndicator()),
+      ]),
     );
   }
 }

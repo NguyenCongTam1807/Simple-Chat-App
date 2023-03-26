@@ -1,12 +1,12 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class MessageBubble extends StatelessWidget {
   final String? text;
   final String userId;
-  final String username;
-  const MessageBubble({this.text, required this.userId, required this.username, Key? key})
+  final String? imageUrl;
+  const MessageBubble(
+      {this.text, required this.userId, this.imageUrl, Key? key})
       : super(key: key);
 
   @override
@@ -15,18 +15,23 @@ class MessageBubble extends StatelessWidget {
 
     return Row(
       mainAxisAlignment:
-      isUsers ? MainAxisAlignment.end : MainAxisAlignment.start,
+          isUsers ? MainAxisAlignment.end : MainAxisAlignment.start,
       children: [
         if (isUsers)
-          const Spacer(flex: 3,),
-        if (!isUsers)
-          Text(username),
+          const Spacer(
+            flex: 3,
+          ),
+        if (!isUsers && imageUrl != null)
+          Padding(
+            padding: const EdgeInsets.only(left: 4),
+            child: CircleAvatar(
+                radius: 12, backgroundImage: NetworkImage(imageUrl!)),
+          ),
         Flexible(
           flex: 4,
           child: Container(
-            margin: const EdgeInsets.all(8),
-            padding:
-            const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+            margin: const EdgeInsets.all(6),
+            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
                 color: isUsers
@@ -39,7 +44,9 @@ class MessageBubble extends StatelessWidget {
           ),
         ),
         if (!isUsers)
-          const Spacer(flex: 3,),
+          const Spacer(
+            flex: 3,
+          ),
       ],
     );
   }

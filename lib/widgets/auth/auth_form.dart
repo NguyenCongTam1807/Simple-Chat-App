@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:chat_app/common/dialogs.dart';
+import 'package:chat_app/widgets/pickers/user_avatar_picker.dart';
 import 'package:flutter/material.dart';
 
 class AuthForm extends StatefulWidget {
@@ -6,6 +9,7 @@ class AuthForm extends StatefulWidget {
       {required String email,
       required String password,
       required String username,
+      required File? avatar,
       required bool isLogin}) submitAuthForm;
   const AuthForm(this.submitAuthForm, {Key? key}) : super(key: key);
 
@@ -24,6 +28,8 @@ class _AuthFormState extends State<AuthForm>
   var _username = '';
   var _email = '';
   var _password = '';
+
+  File? _userAvatarFile;
 
   late AnimationController _expandController;
   late Animation<double> _sizeAnimation;
@@ -55,12 +61,21 @@ class _AuthFormState extends State<AuthForm>
     if (_formKey.currentState?.validate() == false) {
       return;
     }
+    if (_userAvatarFile == null && _authMode == AuthMode.signUp) {
+      showErrorDialog(context, 'Please add an avatar');
+      return;
+    }
     _formKey.currentState?.save();
     widget.submitAuthForm(
         username: _username,
         email: _email,
         password: _password,
+        avatar: _userAvatarFile,
         isLogin: _authMode == AuthMode.login);
+  }
+
+  void _pickImage(File image) {
+    _userAvatarFile = image;
   }
 
   @override
@@ -85,7 +100,7 @@ class _AuthFormState extends State<AuthForm>
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
                     final regExp =
-                    RegExp("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}\$");
+                        RegExp("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}\$");
                     if (value != null && regExp.hasMatch(value)) {
                       return null;
                     }
@@ -120,17 +135,20 @@ class _AuthFormState extends State<AuthForm>
                             labelText: 'Re-enter Password'),
                         obscureText: true,
                         validator: (value) {
-                          if (_authMode == AuthMode.login || value == _passwordController.text) {
+                          if (_authMode == AuthMode.login ||
+                              value == _passwordController.text) {
                             return null;
                           }
                           return 'Passwords do not match';
                         },
                       ),
                       TextFormField(
-                        decoration: const InputDecoration(labelText: 'Username'),
+                        decoration:
+                            const InputDecoration(labelText: 'Username'),
                         validator: (value) {
                           final regExp = RegExp("^[a-zA-Z0-9@.]{4,}\$");
-                          if (_authMode == AuthMode.login || (value != null && regExp.hasMatch(value))) {
+                          if (_authMode == AuthMode.login ||
+                              (value != null && regExp.hasMatch(value))) {
                             return null;
                           }
                           return 'Invalid username';
@@ -139,11 +157,15 @@ class _AuthFormState extends State<AuthForm>
                           _username = value ?? "";
                         },
                       ),
+                      const SizedBox(
+                        height: 15,
+                      ),
+                      UserAvatarPicker(_pickImage),
                     ],
                   ),
                 ),
                 const SizedBox(
-                  height: 30,
+                  height: 15,
                 ),
                 ElevatedButton(
                     onPressed: _submit,

@@ -15,45 +15,59 @@ class ChatScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = FirebaseAuth.instance;
     return Scaffold(
-      appBar: AppBar(
-        title: Text(username),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await auth.signOut();
-            },
-          )
-        ],
-      ),
-      body: FutureBuilder(
-        future: FirebaseMessaging.instance.requestPermission(
-          alert: true,
-          announcement: false,
-          badge: true,
-          carPlay: false,
-          criticalAlert: false,
-          provisional: false,
-          sound: true,
+        appBar: AppBar(
+          title: Text(username),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: () async {
+                await auth.signOut();
+              },
+            )
+          ],
         ),
-        builder: (BuildContext context,
-            AsyncSnapshot<NotificationSettings> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          } else if (snapshot.data?.authorizationStatus ==
-              AuthorizationStatus.authorized) {
-            return Column(
-              children: const [
-                Expanded(child: Messages()),
-                NewMessage(),
-              ],
-            );
-          }
-          return const SizedBox();
-        },
-      ),
-    );
+        body: Column(
+          children: const [
+            Expanded(child: Messages()),
+            NewMessage(),
+          ],
+        )
+        // FutureBuilder(
+        //   //Only needed for iOS
+        //   future: FirebaseMessaging.instance.requestPermission(
+        //     alert: true,
+        //     announcement: false,
+        //     badge: true,
+        //     carPlay: false,
+        //     criticalAlert: false,
+        //     provisional: false,
+        //     sound: true,
+        //   ),
+        //   builder: (BuildContext context,
+        //       AsyncSnapshot<NotificationSettings> snapshot) {
+        //     if (snapshot.connectionState == ConnectionState.waiting) {
+        //       return const Center(
+        //         child: CircularProgressIndicator(),
+        //       );
+        //     } else if (snapshot.data?.authorizationStatus ==
+        //         AuthorizationStatus.authorized) {
+        //       FirebaseMessaging.onMessage.listen((event) {
+        //         print("onMessage: $event ${event.data}");
+        //       });
+        //       FirebaseMessaging.onMessageOpenedApp.listen((event) {
+        //         print("onMessageOpenedApp: $event ${event.data}");
+        //       });
+        //
+        //       return Column(
+        //         children: const [
+        //           Expanded(child: Messages()),
+        //           NewMessage(),
+        //         ],
+        //       );
+        //     }
+        //     return const SizedBox();
+        //   },
+        // ),
+        );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -25,11 +26,33 @@ class ChatScreen extends StatelessWidget {
           )
         ],
       ),
-      body: Column(
-        children: const [
-          Expanded(child: Messages()),
-          NewMessage(),
-        ],
+      body: FutureBuilder(
+        future: FirebaseMessaging.instance.requestPermission(
+          alert: true,
+          announcement: false,
+          badge: true,
+          carPlay: false,
+          criticalAlert: false,
+          provisional: false,
+          sound: true,
+        ),
+        builder: (BuildContext context,
+            AsyncSnapshot<NotificationSettings> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          } else if (snapshot.data?.authorizationStatus ==
+              AuthorizationStatus.authorized) {
+            return Column(
+              children: const [
+                Expanded(child: Messages()),
+                NewMessage(),
+              ],
+            );
+          }
+          return const SizedBox();
+        },
       ),
     );
   }

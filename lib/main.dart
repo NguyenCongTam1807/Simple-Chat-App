@@ -46,11 +46,11 @@ class MyApp extends StatelessWidget {
                   .then((value) {
                 return value.data()?['username'];
               }),
-              builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
+              builder: (BuildContext context, AsyncSnapshot<dynamic> futureSnapshot) {
+                if (futureSnapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                return ChatScreen(snapshot.data);
+                return ChatScreen(futureSnapshot.data);
               },
             );
           }
